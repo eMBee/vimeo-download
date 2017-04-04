@@ -18,7 +18,6 @@ video = content['video'][idx]
 video_base_url = base_url + 'video/' + video['base_url']
 print 'base url:', video_base_url
 
-#filename = sys.argv[2] + '.mp4' if sys.argv[2] else 'video_%d.mp4' % video['id']
 filename = 'v.mp4'
 video_filename = filename
 print 'saving to %s' % filename
@@ -46,7 +45,6 @@ audio = content['audio'][0]
 audio_base_url = base_url + audio['base_url'][3:]
 print 'base url:', audio_base_url
 
-#filename = sys.argv[2] + '.mp3' if sys.argv[2] else 'audio_%d.mp3' % audio['id']
 filename = 'a.mp3'
 audio_filename = filename
 print 'saving to %s' % filename
