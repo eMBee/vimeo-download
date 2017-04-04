@@ -75,7 +75,7 @@ command = [ FFMPEG_BIN,
         '-i', audio_filename,
         '-i',video_filename,
         '-acodec', 'copy',
-        '-vcodec', 'h264',
+        '-vcodec', 'copy',
         filename ]
 
 pipe = sp.Popen( command, stdin=sp.PIPE, stderr=sp.PIPE)
