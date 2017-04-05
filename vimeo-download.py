@@ -75,7 +75,7 @@ command = [ FFMPEG_BIN,
         '-i', audio_filename,
         '-i',video_filename,
         '-acodec', 'copy',
-        '-vcodec', 'copy',
+        '-vcodec', 'h264',
         filename ]
 
 sp.call(command, shell=True)
