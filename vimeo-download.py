@@ -78,4 +78,4 @@ command = [ FFMPEG_BIN,
         '-vcodec', 'copy',
         filename ]
 
-pipe = sp.Popen( command, stdin=sp.PIPE, stderr=sp.PIPE)
+sp.call(command, shell=True)
