@@ -11,7 +11,7 @@ this script is useful for cases where youtube-dl is unable to find the master ur
 for example on pages that require login or cookies.
 
 
-the get the master url:
+to get the master url:
 
    1. Open the network tab in the inspector
    2. Find the url of a request to the master.json file
