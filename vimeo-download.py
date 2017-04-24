@@ -1,81 +1,168 @@
+#!/usr/bin/env python
+# Downloads the video and audio streams from the master json url and recombines
+# it into a single file
+from __future__ import print_function
 import requests
 import base64
 from tqdm import tqdm
 import sys
 import subprocess as sp
+import os
+import distutils
+import argparse
+import datetime
 
-FFMPEG_BIN = 'ffmpeg.exe'
 
-master_json_url = sys.argv[1]
-base_url = master_json_url[:master_json_url.rfind('/', 0, -26) - 5]
+# Prefix for this run
+TIMESTAMP = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
 
-resp = requests.get(master_json_url)
-content = resp.json()
+# Create temp and output paths based on where the executable is located
+BASE_DIR = os.path.dirname(os.path.realpath(__file__))
+TEMP_DIR = os.path.join(BASE_DIR, "temp")
+OUTPUT_DIR = os.path.join(BASE_DIR, "output")
+for directory in (TEMP_DIR, OUTPUT_DIR):
+    if not os.path.exists(directory):
+        print("Creating {}...".format(directory))
+        os.makedirs(directory)
 
-heights = [(i, d['height']) for (i, d) in enumerate(content['video'])]
-idx, _ = max(heights, key=lambda (_, h): h)
-video = content['video'][idx]
-video_base_url = base_url + 'video/' + video['base_url']
-print 'base url:', video_base_url
+# create temp directory right before we need it
+INSTANCE_TEMP = os.path.join(TEMP_DIR, TIMESTAMP)
 
-filename = 'v.mp4'
-video_filename = filename
-print 'saving to %s' % filename
+# Check operating system
+OS_WIN = True if os.name == "nt" else False
 
-video_file = open(filename, 'wb')
+# Find ffmpeg executable
+FFMPEG_BIN = 'ffmpeg.exe' if OS_WIN else distutils.spawn.find_executable("ffmpeg")
 
-init_segment = base64.b64decode(video['init_segment'])
-video_file.write(init_segment)
+def download_video(base_url, content):
+    """Downloads the video portion of teht content into the INSTANCE_TEMP folder"""
+    heights = [(i, d['height']) for (i, d) in enumerate(content['video'])]
+    idx, _ = max(heights, key=lambda (_, h): h)
+    video = content['video'][idx]
+    video_base_url = base_url + 'video/' + video['base_url']
+    print('video base url:', video_base_url)
 
-for segment in tqdm(video['segments']):
-    segment_url = video_base_url + segment['url']
-    resp = requests.get(segment_url, stream=True)
-    if resp.status_code != 200:
-        print 'not 200!'
-        print resp
-        print segment_url
-        break
-    for chunk in resp:
-        video_file.write(chunk)
+    # Create INSTANCE_TEMP if it doesn't exist
+    if not os.path.exists(INSTANCE_TEMP):
+        print("Creating {}...".format(INSTANCE_TEMP))
+        os.makedirs(INSTANCE_TEMP)
 
-video_file.flush()
-video_file.close()
+    # Download the video portion of the stream
+    filename = os.path.join(INSTANCE_TEMP, "v.mp4")
+    video_filename = filename
+    print('saving to %s' % filename)
 
-audio = content['audio'][0]
-audio_base_url = base_url + audio['base_url'][3:]
-print 'base url:', audio_base_url
+    video_file = open(filename, 'wb')
 
-filename = 'a.mp3'
-audio_filename = filename
-print 'saving to %s' % filename
+    init_segment = base64.b64decode(video['init_segment'])
+    video_file.write(init_segment)
 
-audio_file = open(filename, 'wb')
+    for segment in tqdm(video['segments']):
+        segment_url = video_base_url + segment['url']
+        resp = requests.get(segment_url, stream=True)
+        if resp.status_code != 200:
+            print('not 200!')
+            print(resp)
+            print(segment_url)
+            break
+        for chunk in resp:
+            video_file.write(chunk)
 
-init_segment = base64.b64decode(audio['init_segment'])
-audio_file.write(init_segment)
+    video_file.flush()
+    video_file.close()
 
-for segment in tqdm(audio['segments']):
-    segment_url = audio_base_url + segment['url']
-    resp = requests.get(segment_url, stream=True)
-    if resp.status_code != 200:
-        print 'not 200!'
-        print resp
-        print segment_url
-        break
-    for chunk in resp:
-        audio_file.write(chunk)
 
-audio_file.flush()
-audio_file.close()
 
-filename = sys.argv[2] + '.mp4' if sys.argv[2] else 'video.mp4'
+def download_audio(base_url, content):
+    """Downloads the video portion of teht content into the INSTANCE_TEMP folder"""
+    audio = content['audio'][0]
+    audio_base_url = base_url + audio['base_url'][3:]
+    print('audio base url:', audio_base_url)
 
-command = [ FFMPEG_BIN,
-        '-y', # (optional) overwrite output file if it exists
-        '-i', audio_filename,
-        '-i',video_filename,
-        '-acodec', 'copy',
-        '-vcodec', 'h264',
-        filename ]
 
-sp.call(command, shell=True)
+    # Create INSTANCE_TEMP if it doesn't exist
+    if not os.path.exists(INSTANCE_TEMP):
+        print("Creating {}...".format(INSTANCE_TEMP))
+        os.makedirs(INSTANCE_TEMP)
+
+    # Download
+    filename = os.path.join(INSTANCE_TEMP, "a.mp3")
+    audio_filename = filename
+    print('saving to %s' % filename)
+
+    audio_file = open(filename, 'wb')
+
+    init_segment = base64.b64decode(audio['init_segment'])
+    audio_file.write(init_segment)
+
+    for segment in tqdm(audio['segments']):
+        segment_url = audio_base_url + segment['url']
+        resp = requests.get(segment_url, stream=True)
+        if resp.status_code != 200:
+            print('not 200!')
+            print(resp)
+            print(segment_url)
+            break
+        for chunk in resp:
+            audio_file.write(chunk)
+
+    audio_file.flush()
+    audio_file.close()
+
+def merge_audio_video(input_timestamp, output_filename):
+    audio_filename = os.path.join(TEMP_DIR, TIMESTAMP, "a.mp3")
+    video_filename = os.path.join(TEMP_DIR, TIMESTAMP, "v.mp4")
+    command = [ FFMPEG_BIN,
+            '-i', audio_filename,
+            '-i', video_filename,
+            '-acodec', 'copy',
+            '-vcodec', 'h264',
+            output_filename ]
+    print("ffmpeg command is:", command)
+
+    if OS_WIN:
+        sp.call(command, shell=True)
+    else:
+        sp.call(command)
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-u", "--url", action="store", help="master json url")
+    parser.add_argument("-o", "--output", action="store",
+                        help="output video filename without extension (mp4)",
+                        default=None)
+    parser.add_argument("-s", "--skip-download", action="store",
+                        help="merges video and audio output of already downloaded streams",
+                        metavar="TIMESTAMP")
+    parser.add_argument("--skip-merge", action="store_true",
+                        help="downloads only and doesn't merge")
+    args = parser.parse_args()
+
+    # Set output filename depending on defaults
+    if args.output:
+        output_filename = os.path.join(OUTPUT_DIR, args.output + '.mp4')
+    else:
+        output_filename = os.path.join(OUTPUT_DIR, '{}_video.mp4'.format(TIMESTAMP))
+    print("Output filename set to:", output_filename)
+
+    if not args.skip_download:
+        # parse the base_url
+        master_json_url = args.url
+        base_url = master_json_url[:master_json_url.rfind('/', 0, -26) - 5]
+
+        # get the content
+        resp = requests.get(master_json_url)
+        content = resp.json()
+
+        # Download the components of the stream
+        download_video(base_url, content)
+        download_audio(base_url, content)
+
+    # Overwrite timestamp if skipping download
+    if args.skip_download:
+        TIMESTAMP = args.skip_download
+        print("Overriding timestamp with:", TIMESTAMP)
+
+    # Combine audio and video
+    if not args.skip_merge:
+        merge_audio_video(TIMESTAMP, output_filename)
