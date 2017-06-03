@@ -32,7 +32,13 @@ INSTANCE_TEMP = os.path.join(TEMP_DIR, TIMESTAMP)
 OS_WIN = True if os.name == "nt" else False
 
 # Find ffmpeg executable
-FFMPEG_BIN = 'ffmpeg.exe' if OS_WIN else distutils.spawn.find_executable("ffmpeg")
+if OS_WIN:
+    FFMPEG_BIN = 'ffmpeg.exe'
+else:
+    try:
+        FFMPEG_BIN = distutils.spawn.find_executable("ffmpeg")
+    except AttributeError:
+        FFMPEG_BIN = 'ffmpeg'
 
 def download_video(base_url, content):
     """Downloads the video portion of teht content into the INSTANCE_TEMP folder"""
