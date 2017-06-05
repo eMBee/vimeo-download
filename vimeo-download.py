@@ -8,7 +8,7 @@ from tqdm import tqdm
 import sys
 import subprocess as sp
 import os
-import distutils
+import distutils.core
 import argparse
 import datetime
 
