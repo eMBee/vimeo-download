@@ -18,8 +18,15 @@ To use this script, the master url needs to be manually extracted from the page:
 To get the master url:
 
    1. Open the network tab in the inspector
-   2. Find the url of a request to the master.json file
+   2. Find the url of a request to the `master.json` file
    3. Run the script with the url as argument
+
+You can download multiple files in parallel with GPU Parallel:
+
+   `parallel -a master-files.txt python vimeo-download.py --url "{}"`
+
+Where `master-files.txt` contains a list of master URLs
+
 
 Acknowledgements
 =======
