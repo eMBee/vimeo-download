@@ -43,7 +43,7 @@ else:
 def download_video(base_url, content):
     """Downloads the video portion of teht content into the INSTANCE_TEMP folder"""
     heights = [(i, d['height']) for (i, d) in enumerate(content['video'])]
-    idx, _ = max(heights, key=lambda (_, h): h)
+    idx, _ = max(heights, key=lambda t: t[1])
     video = content['video'][idx]
     video_base_url = base_url + 'video/' + video['base_url']
     print('video base url:', video_base_url)
@@ -122,7 +122,7 @@ def merge_audio_video(input_timestamp, output_filename):
             '-i', audio_filename,
             '-i', video_filename,
             '-acodec', 'copy',
-            '-vcodec', 'h264',
+            '-vcodec', 'copy',
             output_filename ]
     print("ffmpeg command is:", command)
 
@@ -172,3 +172,4 @@ if __name__ == "__main__":
     # Combine audio and video
     if not args.skip_merge:
         merge_audio_video(TIMESTAMP, output_filename)
+
