@@ -3,11 +3,23 @@ Downloads segmented audio+video from Vimeo and saves as .mp4
 This script is useful for cases where youtube-dl is unable to find the master url,
 for example on pages that require login or cookies.
 
-Install
+Installation 
 =======
-Install [ffmpeg](https://trac.ffmpeg.org/wiki/CompilationGuide).
 
 Install requirements with `pip install -r requirements.txt`
+
+### Installing ffmpeg
+
+Compilation instruction: https://trac.ffmpeg.org/wiki/CompilationGuide
+
+For ubuntu users:
+
+    sudo add-apt-repository ppa:mc3man/trusty-media && sudo apt-get update 
+    sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 8E51A6D660CD88D67D65221D90BD7EACED8E640A
+    sudo apt-get install ffmpeg
+
+(The instructions are taken from [here](http://help.ubuntu.ru/wiki/ffmpeg) - warning: Russian!)
+
 
 Usage
 =====
