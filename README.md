@@ -5,6 +5,7 @@ for example on pages that require login or cookies.
 
 Install
 =======
+Install [ffmpeg](https://trac.ffmpeg.org/wiki/CompilationGuide).
 
 Install requirements with `pip install -r requirements.txt`
 
