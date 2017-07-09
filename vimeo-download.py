@@ -12,21 +12,26 @@ import distutils
 import argparse
 import datetime
 
+import random
+import string
 
 # Prefix for this run
 TIMESTAMP = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+SALT = ''.join(random.choice(string.digits) for _ in range(3))
+OUT_PREFIX = TIMESTAMP + '-' + SALT
 
 # Create temp and output paths based on where the executable is located
 BASE_DIR = os.path.dirname(os.path.realpath(__file__))
 TEMP_DIR = os.path.join(BASE_DIR, "temp")
 OUTPUT_DIR = os.path.join(BASE_DIR, "output")
+
 for directory in (TEMP_DIR, OUTPUT_DIR):
     if not os.path.exists(directory):
         print("Creating {}...".format(directory))
         os.makedirs(directory)
 
 # create temp directory right before we need it
-INSTANCE_TEMP = os.path.join(TEMP_DIR, TIMESTAMP)
+INSTANCE_TEMP = os.path.join(TEMP_DIR, OUT_PREFIX)
 
 # Check operating system
 OS_WIN = True if os.name == "nt" else False
@@ -43,7 +48,7 @@ else:
 def download_video(base_url, content):
     """Downloads the video portion of teht content into the INSTANCE_TEMP folder"""
     heights = [(i, d['height']) for (i, d) in enumerate(content['video'])]
-    idx, _ = max(heights, key=lambda (_, h): h)
+    idx, _ = max(heights, key=lambda t: t[1])
     video = content['video'][idx]
     video_base_url = base_url + 'video/' + video['base_url']
     print('video base url:', video_base_url)
@@ -115,14 +120,14 @@ def download_audio(base_url, content):
     audio_file.flush()
     audio_file.close()
 
-def merge_audio_video(input_timestamp, output_filename):
-    audio_filename = os.path.join(TEMP_DIR, TIMESTAMP, "a.mp3")
-    video_filename = os.path.join(TEMP_DIR, TIMESTAMP, "v.mp4")
+def merge_audio_video(output_filename):
+    audio_filename = os.path.join(TEMP_DIR, OUT_PREFIX, "a.mp3")
+    video_filename = os.path.join(TEMP_DIR, OUT_PREFIX, "v.mp4")
     command = [ FFMPEG_BIN,
             '-i', audio_filename,
             '-i', video_filename,
             '-acodec', 'copy',
-            '-vcodec', 'h264',
+            '-vcodec', 'copy',
             output_filename ]
     print("ffmpeg command is:", command)
 
@@ -148,7 +153,7 @@ if __name__ == "__main__":
     if args.output:
         output_filename = os.path.join(OUTPUT_DIR, args.output + '.mp4')
     else:
-        output_filename = os.path.join(OUTPUT_DIR, '{}_video.mp4'.format(TIMESTAMP))
+        output_filename = os.path.join(OUTPUT_DIR, '{}_video.mp4'.format(OUT_PREFIX))
     print("Output filename set to:", output_filename)
 
     if not args.skip_download:
@@ -171,4 +176,5 @@ if __name__ == "__main__":
 
     # Combine audio and video
     if not args.skip_merge:
-        merge_audio_video(TIMESTAMP, output_filename)
+        merge_audio_video(output_filename)
+
