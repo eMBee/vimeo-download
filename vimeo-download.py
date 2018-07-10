@@ -46,7 +46,7 @@ else:
         FFMPEG_BIN = 'ffmpeg'
 
 def download_video(base_url, content):
-    """Downloads the video portion of teht content into the INSTANCE_TEMP folder"""
+    """Downloads the video portion of the content into the INSTANCE_TEMP folder"""
     heights = [(i, d['height']) for (i, d) in enumerate(content['video'])]
     idx, _ = max(heights, key=lambda t: t[1])
     video = content['video'][idx]
@@ -85,7 +85,7 @@ def download_video(base_url, content):
 
 
 def download_audio(base_url, content):
-    """Downloads the video portion of teht content into the INSTANCE_TEMP folder"""
+    """Downloads the video portion of the content into the INSTANCE_TEMP folder"""
     audio = content['audio'][0]
     audio_base_url = base_url + audio['base_url'][3:]
     print('audio base url:', audio_base_url)
