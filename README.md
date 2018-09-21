@@ -34,7 +34,7 @@ To get the master url:
    2. Find the url of a request to the `master.json` file
    3. Run the script with the url as argument
 
-You can download multiple files in parallel with GPU Parallel:
+You can download multiple files in parallel with GNU Parallel:
 
    `parallel -a master-files.txt python vimeo-download.py --url "{}"`
 
