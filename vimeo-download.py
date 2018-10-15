@@ -62,7 +62,6 @@ def download_video(base_url, content):
 
     # Download the video portion of the stream
     filename = os.path.join(INSTANCE_TEMP, "v.mp4")
-    video_filename = filename
     print('saving to %s' % filename)
 
     video_file = open(filename, 'wb')
@@ -102,7 +101,6 @@ def download_audio(base_url, content):
 
     # Download
     filename = os.path.join(INSTANCE_TEMP, "a.mp3")
-    audio_filename = filename
     print('saving to %s' % filename)
 
     audio_file = open(filename, 'wb')
