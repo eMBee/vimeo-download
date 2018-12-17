@@ -10,10 +10,12 @@ import subprocess as sp
 import os
 import distutils.core
 import argparse
+import urlparse
 import datetime
 
 import random
 import string
+import re
 
 # Prefix for this run
 TIMESTAMP = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
@@ -47,10 +49,11 @@ else:
 
 def download_video(base_url, content):
     """Downloads the video portion of the content into the INSTANCE_TEMP folder"""
-    heights = [(i, d['height']) for (i, d) in enumerate(content['video'])]
+    result = True
+    heights = [(i, d['height']) for (i, d) in enumerate(content)]
     idx, _ = max(heights, key=lambda t: t[1])
-    video = content['video'][idx]
-    video_base_url = base_url + 'video/' + video['base_url']
+    video = content[idx]
+    video_base_url = urlparse.urljoin(base_url, video['base_url'])
     print('video base url:', video_base_url)
 
     # Create INSTANCE_TEMP if it doesn't exist
@@ -60,7 +63,6 @@ def download_video(base_url, content):
 
     # Download the video portion of the stream
     filename = os.path.join(INSTANCE_TEMP, "v.mp4")
-    video_filename = filename
     print('saving to %s' % filename)
 
     video_file = open(filename, 'wb')
@@ -75,19 +77,21 @@ def download_video(base_url, content):
             print('not 200!')
             print(resp)
             print(segment_url)
+            result = False
             break
         for chunk in resp:
             video_file.write(chunk)
 
     video_file.flush()
     video_file.close()
-
+    return result
 
 
 def download_audio(base_url, content):
     """Downloads the video portion of the content into the INSTANCE_TEMP folder"""
-    audio = content['audio'][0]
-    audio_base_url = base_url + audio['base_url'][3:]
+    result = True
+    audio = content[0]
+    audio_base_url = urlparse.urljoin(base_url, audio['base_url'])
     print('audio base url:', audio_base_url)
 
 
@@ -98,7 +102,6 @@ def download_audio(base_url, content):
 
     # Download
     filename = os.path.join(INSTANCE_TEMP, "a.mp3")
-    audio_filename = filename
     print('saving to %s' % filename)
 
     audio_file = open(filename, 'wb')
@@ -113,12 +116,14 @@ def download_audio(base_url, content):
             print('not 200!')
             print(resp)
             print(segment_url)
+            result = False
             break
         for chunk in resp:
             audio_file.write(chunk)
 
     audio_file.flush()
     audio_file.close()
+    return result
 
 def merge_audio_video(output_filename):
     audio_filename = os.path.join(TEMP_DIR, OUT_PREFIX, "a.mp3")
@@ -157,17 +162,21 @@ if __name__ == "__main__":
     print("Output filename set to:", output_filename)
 
     if not args.skip_download:
-        # parse the base_url
         master_json_url = args.url
-        base_url = master_json_url[:master_json_url.rfind('/', 0, -26) - 5]
 
         # get the content
         resp = requests.get(master_json_url)
+        if resp.status_code != 200:
+            match = re.search('<TITLE>(.+)<\/TITLE>', resp.content, re.IGNORECASE)
+            title = match.group(1)
+            print('HTTP error (' + str(resp.status_code) + '): ' + title)
+            quit(0)
         content = resp.json()
+        base_url = urlparse.urljoin(master_json_url, content['base_url'])
 
         # Download the components of the stream
-        download_video(base_url, content)
-        download_audio(base_url, content)
+        if not download_video(base_url, content['video']) or not download_audio(base_url, content['audio']):
+            quit()
 
     # Overwrite timestamp if skipping download
     if args.skip_download:
