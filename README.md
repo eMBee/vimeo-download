@@ -1,3 +1,11 @@
+Since the original author doesn't seem to update or accept any pull requests, I forked it here for basic maintenance. 
+
+Any pull request is welcome!
+
+(Below is original readme)
+
+-----
+
 Downloads segmented audio+video from Vimeo and saves as .mp4
 
 This script is useful for cases where youtube-dl is unable to find the master url,
