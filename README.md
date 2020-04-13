@@ -31,7 +31,10 @@ Usage
 
 To use this script, the master url needs to be manually extracted from the page:
 
-   `python vimeo-download.py --url "http://...master.json?base64_init=1" --output <optional_name>`
+   `python vimeo-download.py --url "http://...master.json?base64_init=1" --output <optional_name> --destination <optional_destination_folder>`
+
+- `--output`: overrides the name of the newly generated file and may contains `/` to create sub-folders
+- `--destination`: overrides the path of the default output folder
 
 To get the master url:
 

@@ -10,9 +10,8 @@ import subprocess as sp
 import os
 import distutils.core
 import argparse
-import urlparse
+import urllib.parse
 import datetime
-
 import random
 import string
 import re
@@ -53,7 +52,7 @@ def download_video(base_url, content):
     heights = [(i, d['height']) for (i, d) in enumerate(content)]
     idx, _ = max(heights, key=lambda t: t[1])
     video = content[idx]
-    video_base_url = urlparse.urljoin(base_url, video['base_url'])
+    video_base_url = urllib.parse.urljoin(base_url, video['base_url'])
     print('video base url:', video_base_url)
 
     # Create INSTANCE_TEMP if it doesn't exist
@@ -67,7 +66,8 @@ def download_video(base_url, content):
 
     video_file = open(filename, 'wb')
 
-    init_segment = base64.b64decode(video['init_segment'])
+    #init_segment = base64.b64decode(video['init_segment'])
+    init_segment = base64.urlsafe_b64decode(video['init_segment'])
     video_file.write(init_segment)
 
     for segment in tqdm(video['segments']):
@@ -91,7 +91,12 @@ def download_audio(base_url, content):
     """Downloads the video portion of the content into the INSTANCE_TEMP folder"""
     result = True
     audio = content[0]
-    audio_base_url = urlparse.urljoin(base_url, audio['base_url'])
+
+    bitrates = [(i, d['bitrate']) for (i, d) in enumerate(content)]
+    idx, _ = max(bitrates, key=lambda t: t[1])
+    audio = content[idx]
+
+    audio_base_url = urllib.parse.urljoin(base_url, audio['base_url'])
     print('audio base url:', audio_base_url)
 
 
@@ -106,7 +111,7 @@ def download_audio(base_url, content):
 
     audio_file = open(filename, 'wb')
 
-    init_segment = base64.b64decode(audio['init_segment'])
+    init_segment = base64.urlsafe_b64decode(audio['init_segment'])
     audio_file.write(init_segment)
 
     for segment in tqdm(audio['segments']):
@@ -147,15 +152,32 @@ if __name__ == "__main__":
     parser.add_argument("-o", "--output", action="store",
                         help="output video filename without extension (mp4)",
                         default=None)
+    parser.add_argument("-d", "--destination", action="store",
+                        help="output destination folder",
+                        default=None)
     parser.add_argument("-s", "--skip-download", action="store",
                         help="merges video and audio output of already downloaded streams",
                         metavar="TIMESTAMP")
     parser.add_argument("--skip-merge", action="store_true",
                         help="downloads only and doesn't merge")
     args = parser.parse_args()
+    
+    if args.destination:
+        OUTPUT_DIR = args.destination
+        index = OUTPUT_DIR.rfind('/')
+        if index != -1:
+            destination_path = OUTPUT_DIR[:index] + '/'
+            if not os.path.exists(destination_path):
+                os.makedirs(destination_path)
 
     # Set output filename depending on defaults
     if args.output:
+        index = args.output.rfind('/')
+        if index != -1:
+            output_path = OUTPUT_DIR + '/' + args.output[:index] + '/'
+            if not os.path.exists(output_path):
+                os.makedirs(output_path)
+
         output_filename = os.path.join(OUTPUT_DIR, args.output + '.mp4')
     else:
         output_filename = os.path.join(OUTPUT_DIR, '{}_video.mp4'.format(OUT_PREFIX))
@@ -172,7 +194,7 @@ if __name__ == "__main__":
             print('HTTP error (' + str(resp.status_code) + '): ' + title)
             quit(0)
         content = resp.json()
-        base_url = urlparse.urljoin(master_json_url, content['base_url'])
+        base_url = urllib.parse.urljoin(master_json_url, content['base_url'])
 
         # Download the components of the stream
         if not download_video(base_url, content['video']) or not download_audio(base_url, content['audio']):
