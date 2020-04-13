@@ -155,6 +155,9 @@ if __name__ == "__main__":
     parser.add_argument("-o", "--output", action="store",
                         help="output video filename without extension (mp4)",
                         default=None)
+    parser.add_argument("-d", "--destination", action="store",
+                        help="output destination folder",
+                        default=None)
     parser.add_argument("-s", "--skip-download", action="store",
                         help="merges video and audio output of already downloaded streams",
                         metavar="TIMESTAMP")
