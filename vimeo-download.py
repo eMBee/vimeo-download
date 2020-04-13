@@ -164,6 +164,12 @@ if __name__ == "__main__":
 
     # Set output filename depending on defaults
     if args.output:
+        index = args.output.rfind('/')
+        if index != -1:
+            output_path = OUTPUT_DIR + '/' + args.output[:index] + '/'
+            if not os.path.exists(output_path):
+                os.makedirs(output_path)
+
         output_filename = os.path.join(OUTPUT_DIR, args.output + '.mp4')
     else:
         output_filename = os.path.join(OUTPUT_DIR, '{}_video.mp4'.format(OUT_PREFIX))
