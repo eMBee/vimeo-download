@@ -161,6 +161,14 @@ if __name__ == "__main__":
     parser.add_argument("--skip-merge", action="store_true",
                         help="downloads only and doesn't merge")
     args = parser.parse_args()
+    
+    if args.destination:
+        OUTPUT_DIR = args.destination
+        index = OUTPUT_DIR.rfind('/')
+        if index != -1:
+            destination_path = OUTPUT_DIR[:index] + '/'
+            if not os.path.exists(destination_path):
+                os.makedirs(destination_path)
 
     # Set output filename depending on defaults
     if args.output:
