@@ -53,7 +53,6 @@ def download_video(base_url, content):
     idx, _ = max(heights, key=lambda t: t[1])
     video = content[idx]
     video_base_url = urllib.parse.urljoin(base_url, video['base_url'])
-    #video_base_url = urlparse.urljoin(base_url, video['base_url'])
     print('video base url:', video_base_url)
 
     # Create INSTANCE_TEMP if it doesn't exist
@@ -98,7 +97,6 @@ def download_audio(base_url, content):
     audio = content[idx]
 
     audio_base_url = urllib.parse.urljoin(base_url, audio['base_url'])
-    #audio_base_url = urlparse.urljoin(base_url, audio['base_url'])
     print('audio base url:', audio_base_url)
 
 
@@ -113,7 +111,6 @@ def download_audio(base_url, content):
 
     audio_file = open(filename, 'wb')
 
-    #init_segment = base64.b64decode(audio['init_segment'])
     init_segment = base64.urlsafe_b64decode(audio['init_segment'])
     audio_file.write(init_segment)
 
