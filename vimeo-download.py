@@ -10,7 +10,8 @@ import subprocess as sp
 import os
 import distutils.core
 import argparse
-import urlparse
+#import urlparse # python 2
+import urllib.parse as urlparse # python 3
 import datetime
 
 import random
