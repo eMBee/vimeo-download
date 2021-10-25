@@ -29,7 +29,7 @@ OUTPUT_DIR = os.path.join(BASE_DIR, "output")
 
 for directory in (TEMP_DIR, OUTPUT_DIR):
     if not os.path.exists(directory):
-        print("Creating {}...".format(directory))
+        print(f"Creating {directory}...")
         os.makedirs(directory)
 
 # create temp directory right before we need it
@@ -58,7 +58,7 @@ def download_video(base_url, content):
 
     # Create INSTANCE_TEMP if it doesn't exist
     if not os.path.exists(INSTANCE_TEMP):
-        print("Creating {}...".format(INSTANCE_TEMP))
+        print(f"Creating {INSTANCE_TEMP}...")
         os.makedirs(INSTANCE_TEMP)
 
     # Download the video portion of the stream
@@ -97,7 +97,7 @@ def download_audio(base_url, content):
 
     # Create INSTANCE_TEMP if it doesn't exist
     if not os.path.exists(INSTANCE_TEMP):
-        print("Creating {}...".format(INSTANCE_TEMP))
+        print(f"Creating {INSTANCE_TEMP}...")
         os.makedirs(INSTANCE_TEMP)
 
     # Download
@@ -158,7 +158,7 @@ if __name__ == "__main__":
     if args.output:
         output_filename = os.path.join(OUTPUT_DIR, args.output + '.mp4')
     else:
-        output_filename = os.path.join(OUTPUT_DIR, '{}_video.mp4'.format(OUT_PREFIX))
+        output_filename = os.path.join(OUTPUT_DIR, f'{OUT_PREFIX}_video.mp4')
     print("Output filename set to:", output_filename)
 
     if not args.skip_download:
