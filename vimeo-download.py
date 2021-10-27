@@ -65,25 +65,23 @@ def download_video(base_url, content):
     filename = os.path.join(INSTANCE_TEMP, "v.mp4")
     print('saving to %s' % filename)
 
-    video_file = open(filename, 'wb')
+    with open(filename, 'wb') as video_file:
 
-    init_segment = base64.b64decode(video['init_segment'])
-    video_file.write(init_segment)
+        init_segment = base64.b64decode(video['init_segment'])
+        video_file.write(init_segment)
 
-    for segment in tqdm(video['segments']):
-        segment_url = video_base_url + segment['url']
-        resp = requests.get(segment_url, stream=True)
-        if resp.status_code != 200:
-            print('not 200!')
-            print(resp)
-            print(segment_url)
-            result = False
-            break
-        for chunk in resp:
-            video_file.write(chunk)
+        for segment in tqdm(video['segments']):
+            segment_url = video_base_url + segment['url']
+            resp = requests.get(segment_url, stream=True)
+            if resp.status_code != 200:
+                print('not 200!')
+                print(resp)
+                print(segment_url)
+                result = False
+                break
+            for chunk in resp:
+                video_file.write(chunk)
 
-    video_file.flush()
-    video_file.close()
     return result
 
 
@@ -104,25 +102,23 @@ def download_audio(base_url, content):
     filename = os.path.join(INSTANCE_TEMP, "a.mp3")
     print('saving to %s' % filename)
 
-    audio_file = open(filename, 'wb')
+    with open(filename, 'wb') as audio_file:
 
-    init_segment = base64.b64decode(audio['init_segment'])
-    audio_file.write(init_segment)
+        init_segment = base64.b64decode(audio['init_segment'])
+        audio_file.write(init_segment)
 
-    for segment in tqdm(audio['segments']):
-        segment_url = audio_base_url + segment['url']
-        resp = requests.get(segment_url, stream=True)
-        if resp.status_code != 200:
-            print('not 200!')
-            print(resp)
-            print(segment_url)
-            result = False
-            break
-        for chunk in resp:
-            audio_file.write(chunk)
+        for segment in tqdm(audio['segments']):
+            segment_url = audio_base_url + segment['url']
+            resp = requests.get(segment_url, stream=True)
+            if resp.status_code != 200:
+                print('not 200!')
+                print(resp)
+                print(segment_url)
+                result = False
+                break
+            for chunk in resp:
+                audio_file.write(chunk)
 
-    audio_file.flush()
-    audio_file.close()
     return result
 
 def merge_audio_video(output_filename):
