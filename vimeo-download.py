@@ -10,7 +10,7 @@ import subprocess as sp
 import os
 import distutils.core
 import argparse
-import urlparse
+import urllib.parse as urlparse
 import datetime
 
 import random
@@ -29,7 +29,7 @@ OUTPUT_DIR = os.path.join(BASE_DIR, "output")
 
 for directory in (TEMP_DIR, OUTPUT_DIR):
     if not os.path.exists(directory):
-        print("Creating {}...".format(directory))
+        print(f"Creating {directory}...")
         os.makedirs(directory)
 
 # create temp directory right before we need it
@@ -58,32 +58,30 @@ def download_video(base_url, content):
 
     # Create INSTANCE_TEMP if it doesn't exist
     if not os.path.exists(INSTANCE_TEMP):
-        print("Creating {}...".format(INSTANCE_TEMP))
+        print(f"Creating {INSTANCE_TEMP}...")
         os.makedirs(INSTANCE_TEMP)
 
     # Download the video portion of the stream
     filename = os.path.join(INSTANCE_TEMP, "v.mp4")
-    print('saving to %s' % filename)
+    print(f"saving to {filename}")
 
-    video_file = open(filename, 'wb')
+    with open(filename, 'wb') as video_file:
 
-    init_segment = base64.b64decode(video['init_segment'])
-    video_file.write(init_segment)
+        init_segment = base64.b64decode(video['init_segment'])
+        video_file.write(init_segment)
 
-    for segment in tqdm(video['segments']):
-        segment_url = video_base_url + segment['url']
-        resp = requests.get(segment_url, stream=True)
-        if resp.status_code != 200:
-            print('not 200!')
-            print(resp)
-            print(segment_url)
-            result = False
-            break
-        for chunk in resp:
-            video_file.write(chunk)
+        for segment in tqdm(video['segments']):
+            segment_url = video_base_url + segment['url']
+            resp = requests.get(segment_url, stream=True)
+            if resp.status_code != 200:
+                print('not 200!')
+                print(resp)
+                print(segment_url)
+                result = False
+                break
+            for chunk in resp:
+                video_file.write(chunk)
 
-    video_file.flush()
-    video_file.close()
     return result
 
 
@@ -97,32 +95,30 @@ def download_audio(base_url, content):
 
     # Create INSTANCE_TEMP if it doesn't exist
     if not os.path.exists(INSTANCE_TEMP):
-        print("Creating {}...".format(INSTANCE_TEMP))
+        print(f"Creating {INSTANCE_TEMP}...")
         os.makedirs(INSTANCE_TEMP)
 
     # Download
     filename = os.path.join(INSTANCE_TEMP, "a.mp3")
-    print('saving to %s' % filename)
+    print(f"saving to {filename}")
 
-    audio_file = open(filename, 'wb')
+    with open(filename, 'wb') as audio_file:
 
-    init_segment = base64.b64decode(audio['init_segment'])
-    audio_file.write(init_segment)
+        init_segment = base64.b64decode(audio['init_segment'])
+        audio_file.write(init_segment)
 
-    for segment in tqdm(audio['segments']):
-        segment_url = audio_base_url + segment['url']
-        resp = requests.get(segment_url, stream=True)
-        if resp.status_code != 200:
-            print('not 200!')
-            print(resp)
-            print(segment_url)
-            result = False
-            break
-        for chunk in resp:
-            audio_file.write(chunk)
+        for segment in tqdm(audio['segments']):
+            segment_url = audio_base_url + segment['url']
+            resp = requests.get(segment_url, stream=True)
+            if resp.status_code != 200:
+                print('not 200!')
+                print(resp)
+                print(segment_url)
+                result = False
+                break
+            for chunk in resp:
+                audio_file.write(chunk)
 
-    audio_file.flush()
-    audio_file.close()
     return result
 
 def merge_audio_video(output_filename):
@@ -134,7 +130,8 @@ def merge_audio_video(output_filename):
             '-acodec', 'copy',
             '-vcodec', 'copy',
             output_filename ]
-    print("ffmpeg command is:", command)
+    print("ffmpeg command is:")
+    print(' '.join(command))
 
     if OS_WIN:
         sp.call(command, shell=True)
@@ -158,7 +155,7 @@ if __name__ == "__main__":
     if args.output:
         output_filename = os.path.join(OUTPUT_DIR, args.output + '.mp4')
     else:
-        output_filename = os.path.join(OUTPUT_DIR, '{}_video.mp4'.format(OUT_PREFIX))
+        output_filename = os.path.join(OUTPUT_DIR, f'{OUT_PREFIX}_video.mp4')
     print("Output filename set to:", output_filename)
 
     if not args.skip_download:
@@ -167,7 +164,7 @@ if __name__ == "__main__":
         # get the content
         resp = requests.get(master_json_url)
         if resp.status_code != 200:
-            match = re.search('<TITLE>(.+)<\/TITLE>', resp.content, re.IGNORECASE)
+            match = re.search(r'<TITLE>(.+)<\/TITLE>', resp.content, re.IGNORECASE)
             title = match.group(1)
             print('HTTP error (' + str(resp.status_code) + '): ' + title)
             quit(0)
