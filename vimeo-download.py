@@ -130,7 +130,8 @@ def merge_audio_video(output_filename):
             '-acodec', 'copy',
             '-vcodec', 'copy',
             output_filename ]
-    print("ffmpeg command is:", command)
+    print("ffmpeg command is:")
+    print(' '.join(command))
 
     if OS_WIN:
         sp.call(command, shell=True)
