@@ -90,7 +90,9 @@ def download_video(base_url, content):
 def download_audio(base_url, content):
     """Downloads the video portion of the content into the INSTANCE_TEMP folder"""
     result = True
-    audio = content[0]
+    bitrates = [(i, d['bitrate']) for (i, d) in enumerate(content)]
+    idx, _ = max(bitrates, key=lambda t: t[1])
+    audio = content[idx]
     audio_base_url = urlparse.urljoin(base_url, audio['base_url'])
     print('audio base url:', audio_base_url)
 
