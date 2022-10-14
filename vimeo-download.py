@@ -164,7 +164,7 @@ if __name__ == "__main__":
     print("Output filename set to:", output_filename)
 
     if not args.skip_download:
-        master_json_url = args.url
+        master_json_url = args.url.strip()
 
         # get the content
         resp = requests.get(master_json_url)
