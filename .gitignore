@@ -1,2 +1,9 @@
 output/
 temp/
+/.vscode
+
+# common python cache, build, etc
+__pycache__/
+*.py[cod]
+*$py.class
+
